@@ -1,0 +1,98 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// yarn prisma migrate dev (cria a migrate)
+model Product {
+  id       String @id @default(uuid())
+  name     String
+  cust     Int
+  price    Int
+  due_date String
+  amount   Int
+
+  created_at DateTime
+  updated_at DateTime
+
+  Category    Category? @relation(fields: [category_Id], references: [id])
+  category_Id String
+
+  Client Client[]
+
+  @@map("products")
+}
+
+model Category {
+  id   String @id @default(uuid())
+  name String
+
+  created_at DateTime
+  updated_at DateTime
+
+  stock    Stock     @relation(fields: [stock_Id], references: [id])
+  stock_Id String
+  products Product[]
+
+  @@map("categories")
+}
+
+model Stock {
+  id                String @id @default(uuid())
+  entry_date        String
+  physical_location String
+  sold_quantity     Int
+  suppliers         String
+
+  CashFlow CashFlow[]
+  Category Category[]
+
+  @@map("stocks")
+}
+
+model CashFlow {
+  id                      String @id @default(uuid())
+  date                    String
+  balance                 Int
+  additional_informations String
+  supplier                String
+
+  sellers  Sellers[]
+  stock    Stock     @relation(fields: [stock_Id], references: [id])
+  stock_Id String
+
+  @@map("cashflows")
+}
+
+model Sellers {
+  id   String @id @default(uuid())
+  name String
+  sale Int
+
+  Client      Client[]
+  CashFlow    CashFlow? @relation(fields: [cashFlow_Id], references: [id])
+  cashFlow_Id String?
+
+  @@map("sellers")
+}
+
+model Client {
+  id                      String @id @default(uuid())
+  kind_payment            String
+  transaction_description String
+  date_sale               String
+
+  products   Product @relation(fields: [product_Id], references: [id])
+  seller     Sellers @relation(fields: [sellers_Id], references: [id])
+  product_Id String
+  sellers_Id String
+
+  @@map("clients")
+}
